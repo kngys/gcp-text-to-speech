@@ -1,15 +1,18 @@
 from google.cloud import texttospeech
 import html
 
-def synthesize_text():
+def synthesize_text(text_file_path):
     """
     Synthesizes audio from plaintext.
     """
 
+    with open(text_file_path) as f:
+        text_input = f.read()
+
     client = texttospeech.TextToSpeechClient.from_service_account_file("gcp_key.json")
-    synthesis_input = texttospeech.SynthesisInput(text="Hello, world!")
+    synthesis_input = texttospeech.SynthesisInput(text=text_input)
     voice = texttospeech.VoiceSelectionParams(
-            language_code="en-US", name="en-US-Standard-C"
+            language_code="en-US", name="en-US-Chirp-HD-D"
     )
     audio_config = texttospeech.AudioConfig(
             audio_encoding=texttospeech.AudioEncoding.MP3
@@ -69,4 +72,5 @@ def synthesize_ssml(ssml_file_path: str):
         print('Audio content written to file "ssml_output.mp3"')
 
 if __name__ == "__main__":
-    synthesize_ssml("text_input.ssml")
+    #synthesize_ssml("text_input.ssml")
+    synthesize_text("text_input.txt")
