@@ -1,7 +1,7 @@
 from google.cloud import texttospeech
 import html
 
-def synthesize_text(text_file_path):
+def synthesize_text(text_file_path, key_file_path):
     """
     Synthesizes audio from plaintext.
     """
@@ -9,7 +9,7 @@ def synthesize_text(text_file_path):
     with open(text_file_path) as f:
         text_input = f.read()
 
-    client = texttospeech.TextToSpeechClient.from_service_account_file("gcp_key.json")
+    client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
     synthesis_input = texttospeech.SynthesisInput(text=text_input)
     voice = texttospeech.VoiceSelectionParams(
             language_code="en-US", name="en-US-Chirp-HD-D"
@@ -44,7 +44,7 @@ def text_to_ssml(input_file: str) -> str:
 
     return ssml
 
-def synthesize_ssml(ssml_file_path: str):
+def synthesize_ssml(ssml_file_path, key_file_path):
     """
     Synthesizes audio from ssml.
     """
@@ -52,7 +52,7 @@ def synthesize_ssml(ssml_file_path: str):
     with open(ssml_file_path) as f:
         ssml_input = f.read()
 
-    client = texttospeech.TextToSpeechClient.from_service_account_file("gcp_key.json")
+    client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
     synthesis_input = texttospeech.SynthesisInput(ssml=ssml_input)
 
     voice = texttospeech.VoiceSelectionParams(
@@ -71,6 +71,3 @@ def synthesize_ssml(ssml_file_path: str):
         out.write(response.audio_content)
         print('Audio content written to file "ssml_output.mp3"')
 
-if __name__ == "__main__":
-    #synthesize_ssml("text_input.ssml")
-    synthesize_text("text_input.txt")

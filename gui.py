@@ -7,15 +7,19 @@ class TextToSpeechApp:
         self.root = root
         self.root.title("Text-to-Speech Synthesizer")
         self.root.geometry("400x200")
-
         self.synth_mode = tk.StringVar(value="text")
 
-        # Select file
-        tk.Label(self.root, text="Choose File:").pack()
+        # Select authentication key file 
+        tk.Label(self.root, text="Select GCP Key File:").pack()
+        self.key_entry = tk.Entry(self.root, width=40)
+        self.key_entry.pack()
+        tk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5)
 
+
+        # Select input file
+        tk.Label(self.root, text="Choose File:").pack()
         self.file_entry = tk.Entry(self.root, width=40)
         self.file_entry.pack()
-
         tk.Button(self.root, text="Browse", command=self.browse_file).pack(pady=5)
 
         # Select mode
@@ -26,6 +30,12 @@ class TextToSpeechApp:
         # Synthesize 
         tk.Button(self.root, text="Synthesize", command=self.run_synthesis).pack(pady=10)
 
+    def browse_key_file(self):
+        key_path = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json")])
+        if key_path:
+            self.key_entry.delete(0, tk.END)
+            self.key_entry.insert(0, key_path)
+
     def browse_file(self):
         path = filedialog.askopenfilename(filetypes=[("Text and SSML Files", "*.txt *.ssml")])
         if path:
@@ -33,8 +43,13 @@ class TextToSpeechApp:
             self.file_entry.insert(0, path)
 
     def run_synthesis(self):
+        key_path = self.key_entry.get()
         path = self.file_entry.get()
         mode = self.synth_mode.get()
+
+        if not key_path:
+            messagebox.showwarning("No key selected.", "Please select a key for authentication.")
+            return
 
         if not path:
             messagebox.showwarning("No file selected.", "Please select a file for synthesis.")
@@ -42,10 +57,10 @@ class TextToSpeechApp:
 
         try:
             if mode == "text":
-                synthesize_text(path)
+                synthesize_text(path, key_path)
                 messagebox.showinfo("Success", "Audio file saved as output.mp3")
             else:
-                synthesize_ssml(path)
+                synthesize_ssml(path, key_path)
                 messagebox.showinfo("Success", "Audio saved as ssml_output.mp3")
         except Exception as e:
             messagebox.showerror("Error", f"Something went wrong:\n{e}")
