@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
+from ttkthemes import ThemedTk
 from app import synthesize_text, synthesize_ssml  
 
 class TextToSpeechApp:
@@ -10,25 +11,25 @@ class TextToSpeechApp:
         self.synth_mode = tk.StringVar(value="text")
 
         # Select authentication key file 
-        tk.Label(self.root, text="Select GCP Key File:").pack()
-        self.key_entry = tk.Entry(self.root, width=40)
+        ttk.Label(self.root, text="Select GCP Key File:").pack()
+        self.key_entry = ttk.Entry(self.root, width=40)
         self.key_entry.pack()
-        tk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5)
+        ttk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5)
 
 
         # Select input file
-        tk.Label(self.root, text="Choose File:").pack()
-        self.file_entry = tk.Entry(self.root, width=40)
+        ttk.Label(self.root, text="Choose File:").pack()
+        self.file_entry = ttk.Entry(self.root, width=40)
         self.file_entry.pack()
-        tk.Button(self.root, text="Browse", command=self.browse_file).pack(pady=5)
+        ttk.Button(self.root, text="Browse", command=self.browse_file).pack(pady=5)
 
         # Select mode
-        tk.Label(self.root, text="Choose Mode:").pack()
-        tk.Radiobutton(self.root, text="Text", variable=self.synth_mode, value="text").pack()
-        tk.Radiobutton(self.root, text="SSML", variable=self.synth_mode, value="ssml").pack()
+        ttk.Label(self.root, text="Choose Mode:").pack()
+        ttk.Radiobutton(self.root, text="Text", variable=self.synth_mode, value="text").pack()
+        ttk.Radiobutton(self.root, text="SSML", variable=self.synth_mode, value="ssml").pack()
 
         # Synthesize 
-        tk.Button(self.root, text="Synthesize", command=self.run_synthesis).pack(pady=10)
+        ttk.Button(self.root, text="Synthesize", command=self.run_synthesis).pack(pady=10)
 
     def browse_key_file(self):
         key_path = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json")])
@@ -66,7 +67,7 @@ class TextToSpeechApp:
             messagebox.showerror("Error", f"Something went wrong:\n{e}")
 
 def start_gui():
-    root = tk.Tk()
+    root = ThemedTk(theme="plastik")
     app = TextToSpeechApp(root)
     root.mainloop()
 
