@@ -13,28 +13,30 @@ class TextToSpeechApp:
         self.synth_mode = tk.StringVar(value="text")
 
         # Load or select authentication key file 
-        ttk.Label(self.root, text="Select GCP Key File:").pack()
-        self.key_entry = ttk.Entry(self.root, width=40)
+        ttk.Label(self.root, text="Select Key File:").pack()
+        self.key_entry = ttk.Entry(self.root, width=50)
         self.key_entry.pack()
         ttk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5)
         config = load_config()
         key_path = config.get("gcp_key_path", "")
         self.key_entry.insert(0, key_path)
+        self.key_entry.icursor(tk.END)
+        self.key_entry.xview_moveto(1)
 
         # Select input file
-        ttk.Label(self.root, text="Choose File:").pack()
-        self.input_entry = ttk.Entry(self.root, width=40)
+        ttk.Label(self.root, text="Select Input File:").pack()
+        self.input_entry = ttk.Entry(self.root, width=50)
         self.input_entry.pack()
         ttk.Button(self.root, text="Browse", command=self.browse_input_file).pack(pady=5)
 
         # Select output path
-        ttk.Label(self.root, text="Choose Output Location:").pack()
-        self.output_entry = ttk.Entry(self.root, width=40)
+        ttk.Label(self.root, text="Select Output Location:").pack()
+        self.output_entry = ttk.Entry(self.root, width=50)
         self.output_entry.pack()
         ttk.Button(self.root, text="Browse", command=self.browse_output_file).pack(pady=5)
 
         # Select mode
-        ttk.Label(self.root, text="Choose Mode:").pack()
+        ttk.Label(self.root, text="Select Mode:").pack()
         ttk.Radiobutton(self.root, text="Text", variable=self.synth_mode, value="text").pack()
         ttk.Radiobutton(self.root, text="SSML", variable=self.synth_mode, value="ssml").pack()
 
@@ -46,6 +48,8 @@ class TextToSpeechApp:
         if key_path:
             self.key_entry.delete(0, tk.END)
             self.key_entry.insert(0, key_path)
+            self.key_entry.icursor(tk.END)
+            self.key_entry.xview_moveto(1)
             save_config({"gcp_key_path": key_path})
 
 
@@ -54,6 +58,8 @@ class TextToSpeechApp:
         if path:
             self.input_entry.delete(0, tk.END)
             self.input_entry.insert(0, path)
+            self.input_entry.icursor(tk.END)
+            self.input_entry.xview_moveto(1)
     
     def browse_output_file(self):
         filetypes = [("MP3 Files", "*.mp3")]
@@ -61,6 +67,8 @@ class TextToSpeechApp:
         if output_path:
             self.output_entry.delete(0, tk.END)
             self.output_entry.insert(0, output_path)
+            self.output_entry.icursor(tk.END)
+            self.output_entry.xview_moveto(1)
 
 
     def run_synthesis(self):
