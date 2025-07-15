@@ -6,3 +6,5 @@ Milestone 2 \[en-US-Neural2-I\].mp3
 Milestone 2 \[en-US-Chirp-HD-D\].mp3
 text_input.txt
 __pycache__/app.cpython-313.pyc
+config.json
+*.pyc

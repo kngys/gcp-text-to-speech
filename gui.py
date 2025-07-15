@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from ttkthemes import ThemedTk
-from app import synthesize_text, synthesize_ssml  
+from app import synthesize_text, synthesize_ssml
+from config import load_config, save_config
 import os
 
 class TextToSpeechApp:
@@ -11,11 +12,14 @@ class TextToSpeechApp:
         self.root.geometry("400x400")
         self.synth_mode = tk.StringVar(value="text")
 
-        # Select authentication key file 
+        # Load or select authentication key file 
         ttk.Label(self.root, text="Select GCP Key File:").pack()
         self.key_entry = ttk.Entry(self.root, width=40)
         self.key_entry.pack()
         ttk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5)
+        config = load_config()
+        key_path = config.get("gcp_key_path", "")
+        self.key_entry.insert(0, key_path)
 
         # Select input file
         ttk.Label(self.root, text="Choose File:").pack()
@@ -42,6 +46,8 @@ class TextToSpeechApp:
         if key_path:
             self.key_entry.delete(0, tk.END)
             self.key_entry.insert(0, key_path)
+            save_config({"gcp_key_path": key_path})
+
 
     def browse_input_file(self):
         path = filedialog.askopenfilename(filetypes=[("Text and SSML Files", "*.txt *.ssml")])
