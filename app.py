@@ -1,12 +1,13 @@
 from google.cloud import texttospeech
 import html
+import os
 
-def synthesize_text(text_file_path, key_file_path):
+def synthesize_text(input_file_path, key_file_path, output_file_path):
     """
     Synthesizes audio from plaintext.
     """
 
-    with open(text_file_path) as f:
+    with open(input_file_path) as f:
         text_input = f.read()
 
     client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
@@ -22,9 +23,10 @@ def synthesize_text(text_file_path, key_file_path):
         input=synthesis_input, voice=voice, audio_config=audio_config
     )
 
-    with open("output.mp3", "wb") as out:
+    with open(output_file_path, "wb") as out:
         out.write(response.audio_content)
-        print('Audio content written to file "output.mp3"')
+        file_name = os.path.basename(output_file_path)
+        print(f'Audio saved to file "{file_name}"')
 
 def text_to_ssml(input_file: str) -> str:
     """
@@ -44,12 +46,12 @@ def text_to_ssml(input_file: str) -> str:
 
     return ssml
 
-def synthesize_ssml(ssml_file_path, key_file_path):
+def synthesize_ssml(input_file_path, key_file_path, output_file_path):
     """
     Synthesizes audio from ssml.
     """
 
-    with open(ssml_file_path) as f:
+    with open(input_file_path) as f:
         ssml_input = f.read()
 
     client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
@@ -67,7 +69,8 @@ def synthesize_ssml(ssml_file_path, key_file_path):
         input=synthesis_input, voice=voice, audio_config=audio_config
     )
 
-    with open("ssml_output.mp3", "wb") as out:
+    with open(output_file_path, "wb") as out:
         out.write(response.audio_content)
-        print('Audio content written to file "ssml_output.mp3"')
+        file_name = os.path.basename(output_file_path)
+        print(f'Audio saved to file "{file_name}"')
 
