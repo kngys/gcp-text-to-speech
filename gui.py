@@ -82,7 +82,11 @@ class TextToSpeechApp:
             return
 
         if not input_path:
-            messagebox.showwarning("No file selected.", "Please select a file for synthesis.")
+            messagebox.showwarning("No input file selected.", "Please select an input file for synthesis.")
+            return
+        
+        if not output_path:  
+            messagebox.showwarning("Location or name of output file not specified.", "Please specify location and name of output file.")
             return
 
         try:

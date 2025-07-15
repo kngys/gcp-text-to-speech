@@ -8,3 +8,6 @@ text_input.txt
 __pycache__/app.cpython-313.pyc
 config.json
 *.pyc
+*.spec
+build/
+dist/
