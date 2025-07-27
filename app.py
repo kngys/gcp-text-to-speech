@@ -84,3 +84,14 @@ def fetch_languages(key_file_path):
         for lang in voice.language_codes:
             lang_set.add(lang)
     return sorted(lang_set)
+
+def fetch_voices(key_file_path, lang):
+
+    client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
+    voices = client.list_voices(language_code=lang).voices
+
+    voice_options = []
+    for voice in voices:
+        voice_desc = f"{voice.name} ({voice.ssml_gender.name})"
+        voice_options.append(voice_desc)
+    return voice_options 
