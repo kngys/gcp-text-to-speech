@@ -2,7 +2,7 @@ from google.cloud import texttospeech
 import html
 import os
 
-def synthesize_text(input_file_path, key_file_path, output_file_path):
+def synthesize_text(input_file_path, key_file_path, output_file_path, lang, voice):
     """
     Synthesizes audio from plaintext.
     """
@@ -13,7 +13,7 @@ def synthesize_text(input_file_path, key_file_path, output_file_path):
     client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
     synthesis_input = texttospeech.SynthesisInput(text=text_input)
     voice = texttospeech.VoiceSelectionParams(
-            language_code="en-US", name="en-US-Chirp-HD-D"
+            language_code=lang, name=voice
     )
     audio_config = texttospeech.AudioConfig(
             audio_encoding=texttospeech.AudioEncoding.MP3
@@ -46,7 +46,7 @@ def text_to_ssml(input_file: str) -> str:
 
     return ssml
 
-def synthesize_ssml(input_file_path, key_file_path, output_file_path):
+def synthesize_ssml(input_file_path, key_file_path, output_file_path, lang, voice):
     """
     Synthesizes audio from ssml.
     """
@@ -58,7 +58,7 @@ def synthesize_ssml(input_file_path, key_file_path, output_file_path):
     synthesis_input = texttospeech.SynthesisInput(ssml=ssml_input)
 
     voice = texttospeech.VoiceSelectionParams(
-            language_code="en-US", name="en-US-Neural2-I"
+            language_code=lang, name=voice
     )
     audio_config = texttospeech.AudioConfig(
             audio_encoding=texttospeech.AudioEncoding.MP3,
@@ -94,4 +94,4 @@ def fetch_voices(key_file_path, lang):
     for voice in voices:
         voice_desc = f"{voice.name} ({voice.ssml_gender.name})"
         voice_options.append(voice_desc)
-    return voice_options 
+    return voice_options
