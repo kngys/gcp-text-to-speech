@@ -9,7 +9,7 @@ class TextToSpeechApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Text-to-Speech Synthesizer")
-        self.root.geometry("600x400")
+        self.root.geometry("650x500")
 
         self.synth_mode = tk.StringVar(value="text")
         self.language = tk.StringVar()
@@ -17,37 +17,37 @@ class TextToSpeechApp:
         self.config = load_config()
         
         # Load or select authentication key file 
-        ttk.Label(self.root, text="Select Key File:").pack()
+        ttk.Label(self.root, text="Select Key File:").pack(pady=5)
         self.key_entry = ttk.Entry(self.root, width=50)
-        self.key_entry.pack()
-        ttk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5)
+        self.key_entry.pack(pady=5)
+        ttk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5) 
         self.key_path = self.config.get("gcp_key_path", "")
         self.key_entry.insert(0, self.key_path)
         self.key_entry.icursor(tk.END)
         self.key_entry.xview_moveto(1)
 
         # Select mode
-        ttk.Label(self.root, text="Select Mode:").pack()
-        ttk.Radiobutton(self.root, text="Text", variable=self.synth_mode, value="text", command=self.update_voice_list).pack()
-        ttk.Radiobutton(self.root, text="SSML", variable=self.synth_mode, value="ssml", command=self.update_voice_list).pack()
+        mode_frame = tk.Frame(self.root)
+        mode_frame.pack()
+        ttk.Label(mode_frame, text="Select Mode:").pack(pady=5)
+        ttk.Radiobutton(mode_frame, text="Text", variable=self.synth_mode, value="text", command=self.update_voice_list).pack(side="left", padx=5)
+        ttk.Radiobutton(mode_frame, text="SSML", variable=self.synth_mode, value="ssml", command=self.update_voice_list).pack(side="left", padx=5)
 
         # Select input file
-        ttk.Label(self.root, text="Select Input File:").pack()
+        ttk.Label(self.root, text="Select Input File:").pack(pady=5)
         self.input_entry = ttk.Entry(self.root, width=50)
-        self.input_entry.pack()
+        self.input_entry.pack(pady=5)
         ttk.Button(self.root, text="Browse", command=self.browse_input_file).pack(pady=5)
 
         # Select output path
-        ttk.Label(self.root, text="Select Output Location:").pack()
+        ttk.Label(self.root, text="Select Output Location:").pack(pady=5)
         self.output_entry = ttk.Entry(self.root, width=50)
-        self.output_entry.pack()
-        ttk.Button(self.root, text="Browse", command=self.browse_output_file).pack(pady=5)
+        self.output_entry.pack(pady=5)
+        ttk.Button(self.root, text="Browse", command=self.browse_output_file).pack(pady=5) 
 
         # Select Language and Voice
         dropdown_frame = tk.Frame(self.root)
         dropdown_frame.pack(pady=10)
-
-        self.lang_set = fetch_en_languages(self.key_path)
 
         ttk.Label(dropdown_frame, text="Select Language:").pack(side="left", padx=5)
         self.language_combo = ttk.Combobox(dropdown_frame, textvariable=self.language, state="readonly")
@@ -65,7 +65,7 @@ class TextToSpeechApp:
         self.voice_combo.set(last_voice)
                 
         # Synthesize 
-        ttk.Button(self.root, text="Synthesize", command=self.run_synthesis).pack(pady=10)
+        ttk.Button(self.root, text="Synthesize", width=20, command=self.run_synthesis).pack(pady=10)
 
     def browse_key_file(self):
         self.key_path = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json")])
