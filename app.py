@@ -74,7 +74,7 @@ def synthesize_ssml(input_file_path, key_file_path, output_file_path, lang, voic
         file_name = os.path.basename(output_file_path)
         print(f'Audio saved to file "{file_name}"') 
 
-def fetch_languages(key_file_path):
+def fetch_en_languages(key_file_path):
     
     client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
     voices = client.list_voices().voices
@@ -82,7 +82,8 @@ def fetch_languages(key_file_path):
     lang_set = set() 
     for voice in voices:
         for lang in voice.language_codes:
-            lang_set.add(lang)
+            if lang.startswith("en-"):
+                lang_set.add(lang)
     return sorted(lang_set)
 
 def fetch_voices(key_file_path, lang):

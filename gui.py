@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from ttkthemes import ThemedTk
-from app import synthesize_text, synthesize_ssml, fetch_languages, fetch_voices
+from app import synthesize_text, synthesize_ssml, fetch_en_languages, fetch_voices
 from config import load_config, save_config
 import os
 
@@ -47,7 +47,7 @@ class TextToSpeechApp:
         dropdown_frame = tk.Frame(self.root)
         dropdown_frame.pack(pady=10)
 
-        self.lang_set = fetch_languages(key_path)
+        self.lang_set = fetch_en_languages(key_path)
         ttk.Label(dropdown_frame, text="Select Language:").pack(side="left", padx=5)
         self.language_combo = ttk.Combobox(dropdown_frame, textvariable=self.language, values=list(self.lang_set))
         self.language_combo.pack(side="left", padx=5)
