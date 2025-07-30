@@ -21,8 +21,8 @@ class TextToSpeechApp:
         self.key_entry = ttk.Entry(self.root, width=50)
         self.key_entry.pack()
         ttk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5)
-        key_path = self.config.get("gcp_key_path", "")
-        self.key_entry.insert(0, key_path)
+        self.key_path = self.config.get("gcp_key_path", "")
+        self.key_entry.insert(0, self.key_path)
         self.key_entry.icursor(tk.END)
         self.key_entry.xview_moveto(1)
 
@@ -47,9 +47,10 @@ class TextToSpeechApp:
         dropdown_frame = tk.Frame(self.root)
         dropdown_frame.pack(pady=10)
 
-        self.lang_set = fetch_en_languages(key_path)
+        self.lang_set = fetch_en_languages(self.key_path)
+
         ttk.Label(dropdown_frame, text="Select Language:").pack(side="left", padx=5)
-        self.language_combo = ttk.Combobox(dropdown_frame, textvariable=self.language, values=list(self.lang_set), state="readonly")
+        self.language_combo = ttk.Combobox(dropdown_frame, textvariable=self.language, state="readonly")
         self.language_combo.pack(side="left", padx=5)
         ttk.Label(dropdown_frame, text="Select Voice:").pack(side="left", padx=5)
         self.voice_combo = ttk.Combobox(dropdown_frame, width=45, textvariable=self.voice, state="readonly")
@@ -60,27 +61,26 @@ class TextToSpeechApp:
         last_voice = self.config.get("gcp_voice", "")
         self.language.set(last_lang)
         self.language_combo.set(last_lang)
-
-        self.update_voice_list()
-        for voice_option in self.voice_combo['values']:
-            if voice_option.startswith(last_voice):
-                self.voice.set(voice_option)
-                self.voice_combo.set(voice_option)
-                break
-
-
+        self.voice.set(last_voice)
+        self.voice_combo.set(last_voice)
+                
         # Synthesize 
         ttk.Button(self.root, text="Synthesize", command=self.run_synthesis).pack(pady=10)
 
     def browse_key_file(self):
-        key_path = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json")])
-        if key_path:
+        self.key_path = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json")])
+        if self.key_path:
             self.key_entry.delete(0, tk.END)
-            self.key_entry.insert(0, key_path)
+            self.key_entry.insert(0, self.key_path)
             self.key_entry.icursor(tk.END)
             self.key_entry.xview_moveto(1)
-            self.config["gcp_key_path"] = key_path
+            self.config["gcp_key_path"] = self.key_path
             save_config(self.config)
+            self.load_languages()
+    
+    def load_languages(self):
+            self.lang_set = fetch_en_languages(self.key_path)
+            self.language_combo['values'] = list(self.lang_set)
 
 
     def browse_input_file(self):
@@ -123,7 +123,6 @@ class TextToSpeechApp:
             
         formatted_voices = [f"{v['name']} ({v['gender']})" for v in voice_list]
         self.voice_combo['values'] = formatted_voices
-
 
     def run_synthesis(self):
         key_path = self.key_entry.get()

@@ -75,29 +75,36 @@ def synthesize_ssml(input_file_path, key_file_path, output_file_path, lang, voic
         print(f'Audio saved to file "{file_name}"') 
 
 def fetch_en_languages(key_file_path):
-    
-    client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
-    voices = client.list_voices().voices
 
-    lang_set = set() 
-    for voice in voices:
-        for lang in voice.language_codes:
-            if lang.startswith("en-"):
-                lang_set.add(lang)
-    return sorted(lang_set)
+    try:
+        client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
+        voices = client.list_voices().voices
+
+        lang_set = set() 
+        for voice in voices:
+            for lang in voice.language_codes:
+                if lang.startswith("en-"):
+                    lang_set.add(lang)
+        return sorted(lang_set)
+    except Exception as e:
+        return []
 
 def fetch_voices(key_file_path, lang):
 
-    client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
-    voices = client.list_voices(language_code=lang).voices
-    voice_list = []
+    try:
 
-    for voice in voices:
+        client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
+        voices = client.list_voices(language_code=lang).voices
+        voice_list = []
 
-        ssml_support = not "Chirp" in voice.name
-        voice_list.append({
-                "name": voice.name,
-                "gender": voice.ssml_gender.name,
-                "ssml_support": ssml_support
-            })
-    return voice_list
+        for voice in voices:
+
+            ssml_support = not "Chirp" in voice.name
+            voice_list.append({
+                    "name": voice.name,
+                    "gender": voice.ssml_gender.name,
+                    "ssml_support": ssml_support
+                })
+        return voice_list
+    except Exception as e:
+        return []
