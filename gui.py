@@ -26,6 +26,11 @@ class TextToSpeechApp:
         self.key_entry.icursor(tk.END)
         self.key_entry.xview_moveto(1)
 
+        # Select mode
+        ttk.Label(self.root, text="Select Mode:").pack()
+        ttk.Radiobutton(self.root, text="Text", variable=self.synth_mode, value="text", command=self.update_voice_list).pack()
+        ttk.Radiobutton(self.root, text="SSML", variable=self.synth_mode, value="ssml", command=self.update_voice_list).pack()
+
         # Select input file
         ttk.Label(self.root, text="Select Input File:").pack()
         self.input_entry = ttk.Entry(self.root, width=50)
@@ -37,11 +42,6 @@ class TextToSpeechApp:
         self.output_entry = ttk.Entry(self.root, width=50)
         self.output_entry.pack()
         ttk.Button(self.root, text="Browse", command=self.browse_output_file).pack(pady=5)
-
-        # Select mode
-        ttk.Label(self.root, text="Select Mode:").pack()
-        ttk.Radiobutton(self.root, text="Text", variable=self.synth_mode, value="text").pack()
-        ttk.Radiobutton(self.root, text="SSML", variable=self.synth_mode, value="ssml").pack()
 
         #Select Language and Voice
         dropdown_frame = tk.Frame(self.root)
@@ -70,7 +70,15 @@ class TextToSpeechApp:
 
 
     def browse_input_file(self):
-        path = filedialog.askopenfilename(filetypes=[("Text and SSML Files", "*.txt *.ssml")])
+
+        synth_mode = self.synth_mode.get()
+        if synth_mode == "text":
+            filetype = [("Text Files", "*.txt")]
+        else: 
+            filetype = [("SSML Files", "*.ssml")]
+        
+        path = filedialog.askopenfilename(filetypes=filetype)
+
         if path:
             self.input_entry.delete(0, tk.END)
             self.input_entry.insert(0, path)
@@ -87,9 +95,10 @@ class TextToSpeechApp:
             self.output_entry.xview_moveto(1)
 
     def update_voice_list(self, event=None):
+        synth_mode = self.synth_mode.get()
         selected_lang = self.language.get()
         key_path = self.key_entry.get()
-        voices = fetch_voices(key_path, selected_lang)
+        voices = fetch_voices(key_path, synth_mode, selected_lang)
         self.voice_combo['values'] = voices
 
     def run_synthesis(self):
