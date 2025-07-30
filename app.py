@@ -86,20 +86,18 @@ def fetch_en_languages(key_file_path):
                 lang_set.add(lang)
     return sorted(lang_set)
 
-def fetch_voices(key_file_path, synth_mode, lang):
+def fetch_voices(key_file_path, lang):
 
     client = texttospeech.TextToSpeechClient.from_service_account_file(key_file_path)
     voices = client.list_voices(language_code=lang).voices
+    voice_list = []
 
-    voice_options = []
+    for voice in voices:
 
-    if synth_mode == "ssml":
-        for voice in voices:
-            if not "Chirp" in voice.name:
-                voice_desc = f"{voice.name} ({voice.ssml_gender.name})"
-                voice_options.append(voice_desc)
-    else:
-        for voice in voices:
-            voice_desc = f"{voice.name} ({voice.ssml_gender.name})"
-            voice_options.append(voice_desc)
-    return voice_options
+        ssml_support = not "Chirp" in voice.name
+        voice_list.append({
+                "name": voice.name,
+                "gender": voice.ssml_gender.name,
+                "ssml_support": ssml_support
+            })
+    return voice_list

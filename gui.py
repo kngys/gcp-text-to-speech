@@ -14,14 +14,14 @@ class TextToSpeechApp:
         self.synth_mode = tk.StringVar(value="text")
         self.language = tk.StringVar()
         self.voice = tk.StringVar()
+        self.config = load_config()
         
         # Load or select authentication key file 
         ttk.Label(self.root, text="Select Key File:").pack()
         self.key_entry = ttk.Entry(self.root, width=50)
         self.key_entry.pack()
         ttk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5)
-        config = load_config()
-        key_path = config.get("gcp_key_path", "")
+        key_path = self.config.get("gcp_key_path", "")
         self.key_entry.insert(0, key_path)
         self.key_entry.icursor(tk.END)
         self.key_entry.xview_moveto(1)
@@ -43,18 +43,31 @@ class TextToSpeechApp:
         self.output_entry.pack()
         ttk.Button(self.root, text="Browse", command=self.browse_output_file).pack(pady=5)
 
-        #Select Language and Voice
+        # Select Language and Voice
         dropdown_frame = tk.Frame(self.root)
         dropdown_frame.pack(pady=10)
 
         self.lang_set = fetch_en_languages(key_path)
         ttk.Label(dropdown_frame, text="Select Language:").pack(side="left", padx=5)
-        self.language_combo = ttk.Combobox(dropdown_frame, textvariable=self.language, values=list(self.lang_set))
+        self.language_combo = ttk.Combobox(dropdown_frame, textvariable=self.language, values=list(self.lang_set), state="readonly")
         self.language_combo.pack(side="left", padx=5)
         ttk.Label(dropdown_frame, text="Select Voice:").pack(side="left", padx=5)
-        self.voice_combo = ttk.Combobox(dropdown_frame, width=45, textvariable=self.voice)
+        self.voice_combo = ttk.Combobox(dropdown_frame, width=45, textvariable=self.voice, state="readonly")
         self.voice_combo.pack(side="left", padx=5)
         self.language_combo.bind("<<ComboboxSelected>>", self.update_voice_list)
+
+        last_lang = self.config.get("gcp_language", "")
+        last_voice = self.config.get("gcp_voice", "")
+        self.language.set(last_lang)
+        self.language_combo.set(last_lang)
+
+        self.update_voice_list()
+        for voice_option in self.voice_combo['values']:
+            if voice_option.startswith(last_voice):
+                self.voice.set(voice_option)
+                self.voice_combo.set(voice_option)
+                break
+
 
         # Synthesize 
         ttk.Button(self.root, text="Synthesize", command=self.run_synthesis).pack(pady=10)
@@ -66,11 +79,11 @@ class TextToSpeechApp:
             self.key_entry.insert(0, key_path)
             self.key_entry.icursor(tk.END)
             self.key_entry.xview_moveto(1)
-            save_config({"gcp_key_path": key_path})
+            self.config["gcp_key_path"] = key_path
+            save_config(self.config)
 
 
     def browse_input_file(self):
-
         synth_mode = self.synth_mode.get()
         if synth_mode == "text":
             filetype = [("Text Files", "*.txt")]
@@ -78,7 +91,6 @@ class TextToSpeechApp:
             filetype = [("SSML Files", "*.ssml")]
         
         path = filedialog.askopenfilename(filetypes=filetype)
-
         if path:
             self.input_entry.delete(0, tk.END)
             self.input_entry.insert(0, path)
@@ -97,9 +109,21 @@ class TextToSpeechApp:
     def update_voice_list(self, event=None):
         synth_mode = self.synth_mode.get()
         selected_lang = self.language.get()
+        selected_voice = self.voice.get()
         key_path = self.key_entry.get()
-        voices = fetch_voices(key_path, synth_mode, selected_lang)
-        self.voice_combo['values'] = voices
+        voice_list = fetch_voices(key_path, selected_lang)
+
+        if synth_mode == "ssml":
+            voice_list = [v for v in voice_list if v['ssml_support']]
+            voice_names = [v['name'] for v in voice_list]
+            if selected_voice not in voice_names:
+                self.voice.set("")
+                self.voice_combo.set("")
+                messagebox.showinfo("Voice Not Supported", "The previously selected voice does not support SSML.")
+            
+        formatted_voices = [f"{v['name']} ({v['gender']})" for v in voice_list]
+        self.voice_combo['values'] = formatted_voices
+
 
     def run_synthesis(self):
         key_path = self.key_entry.get()
@@ -126,6 +150,12 @@ class TextToSpeechApp:
                 synthesize_text(input_path, key_path, output_path, lang, voice_name)
             else:
                 synthesize_ssml(input_path, key_path, output_path, lang, voice_name)
+
+            self.config["gcp_key_path"] = key_path
+            self.config["gcp_language"] = lang
+            self.config["gcp_voice"] = voice_name
+            save_config(self.config)
+
             file_name = os.path.basename(output_path)
             messagebox.showinfo("Success", f"Audio saved as {file_name}")
         except Exception as e:
