@@ -55,6 +55,7 @@ class TextToSpeechApp:
         ttk.Label(dropdown_frame, text="Select Voice:").pack(side="left", padx=5)
         self.voice_combo = ttk.Combobox(dropdown_frame, width=45, textvariable=self.voice, state="readonly")
         self.voice_combo.pack(side="left", padx=5)
+        self.language_combo.bind("<Button-1>", lambda event: self.load_languages())
         self.language_combo.bind("<<ComboboxSelected>>", self.update_voice_list)
 
         last_lang = self.config.get("gcp_language", "")
