@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from ttkthemes import ThemedTk
-from app import synthesize_text, synthesize_ssml, fetch_en_languages, fetch_voices
+from app.tts_manager import TTSManager
+from app.google_tts import GoogleTTSProvider
 from config import load_config, save_config
 import os
 
@@ -9,12 +10,23 @@ class TextToSpeechApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Text-to-Speech Synthesizer")
-        self.root.geometry("650x500")
+        self.root.geometry("700x600")
 
         self.synth_mode = tk.StringVar(value="text")
         self.language = tk.StringVar()
         self.voice = tk.StringVar()
+        self.provider = tk.StringVar(value="Google")
         self.config = load_config()
+
+        self.tts_manager = TTSManager()
+        self.key_path = self.config.get("gcp_key_path", "")
+
+        # Select provider 
+        ttk.Label(self.root, text="Select TTS Provider:").pack(pady=5)
+        self.provider_combo = ttk.Combobox(self.root, textvariable=self.provider, state="readonly")
+        self.provider_combo['values'] = ["Google"]
+        self.provider_combo.pack(pady=5)
+        self.provider_combo.bind("<<ComboboxSelected>>", self.set_provider)
         
         # Load or select authentication key file 
         ttk.Label(self.root, text="Select Key File:").pack(pady=5)
@@ -64,10 +76,37 @@ class TextToSpeechApp:
         self.language_combo.set(last_lang)
         self.voice.set(last_voice)
         self.voice_combo.set(last_voice)
+        if last_lang:
+            self.update_voice_list()
+
                 
         # Synthesize 
         ttk.Button(self.root, text="Synthesize", width=20, command=self.run_synthesis).pack(pady=10)
 
+        if self.key_path:
+            self.initialize_provider_from_key(self.key_path)
+
+    def initialize_provider_from_key(self, key_path):
+        if not os.path.exists(key_path):
+            messagebox.showwarning("Invalid Key", "The key file path in config.json is invalid.")
+            return
+
+        self.tts_manager.register_provider("Google", GoogleTTSProvider(key_path))
+        self.tts_manager.set_active_provider("Google")
+        self.load_languages()
+        self.update_voice_list()
+
+
+    def set_provider(self, event=None):
+        selected = self.provider.get()
+        self.tts_manager.set_active_provider(selected)
+
+        self.load_languages()
+        self.language.set("")
+        self.language_combo.set("")
+        self.voice.set("")
+        self.voice_combo.set("")
+    
     def browse_key_file(self):
         self.key_path = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json")])
         if self.key_path:
@@ -77,12 +116,17 @@ class TextToSpeechApp:
             self.key_entry.xview_moveto(1)
             self.config["gcp_key_path"] = self.key_path
             save_config(self.config)
+            self.tts_manager.register_provider("Google", GoogleTTSProvider(self.key_path))
+            self.tts_manager.set_active_provider("Google")
             self.load_languages()
     
     def load_languages(self):
-            self.lang_set = fetch_en_languages(self.key_path)
+        try:
+            self.lang_set = self.tts_manager.get_languages()
             self.language_combo['values'] = list(self.lang_set)
-
+            self.voice_combo['values'] = []  
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load languages:\n{e}")
 
     def browse_input_file(self):
         synth_mode = self.synth_mode.get()
@@ -108,22 +152,21 @@ class TextToSpeechApp:
             self.output_entry.xview_moveto(1)
 
     def update_voice_list(self, event=None):
-        synth_mode = self.synth_mode.get()
         selected_lang = self.language.get()
         selected_voice = self.voice.get()
-        key_path = self.key_entry.get()
-        voice_list = fetch_voices(key_path, selected_lang)
-
-        if synth_mode == "ssml":
-            voice_list = [v for v in voice_list if v['ssml_support']]
-            voice_names = [v['name'] for v in voice_list]
-            if selected_voice not in voice_names:
-                self.voice.set("")
-                self.voice_combo.set("")
-                messagebox.showinfo("Voice Not Supported", "The previously selected voice does not support SSML.")
-            
-        formatted_voices = [f"{v['name']} ({v['gender']})" for v in voice_list]
-        self.voice_combo['values'] = formatted_voices
+        try:
+            voice_list = self.tts_manager.get_voices(selected_lang)
+            if self.synth_mode.get() == "ssml":
+                voice_list = [v for v in voice_list if v['ssml_support']]
+                voice_names = [v['name'] for v in voice_list]
+                if selected_voice not in voice_names:
+                    self.voice.set("")
+                    self.voice_combo.set("")
+                    messagebox.showinfo("Voice Not Supported", "The selected voice does not support SSML.")
+            formatted_voices = [f"{v['name']} ({v['gender']})" for v in voice_list]
+            self.voice_combo['values'] = formatted_voices
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load voices:\n{e}")
 
     def run_synthesis(self):
         key_path = self.key_entry.get()
@@ -146,20 +189,18 @@ class TextToSpeechApp:
             return
 
         try:
-            if mode == "text":
-                synthesize_text(input_path, key_path, output_path, lang, voice_name)
-            else:
-                synthesize_ssml(input_path, key_path, output_path, lang, voice_name)
-
-            self.config["gcp_key_path"] = key_path
+            provider = self.tts_manager.active_provider
+            
+            self.tts_manager.synthesize(mode, input_path, lang, voice_name, output_path)
+            self.config["gcp_key_path"] = self.key_path
             self.config["gcp_language"] = lang
             self.config["gcp_voice"] = voice_name
             save_config(self.config)
-
             file_name = os.path.basename(output_path)
             messagebox.showinfo("Success", f"Audio saved as {file_name}")
         except Exception as e:
             messagebox.showerror("Error", f"Something went wrong:\n{e}")
+
 
 def start_gui():
     root = ThemedTk(theme="plastik")
