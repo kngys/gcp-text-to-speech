@@ -37,19 +37,19 @@ Depending on the mode previously selected, click on the **Browse** button to sel
 
 Click the **Browse** button to select a location to save the generated output audio file. 
 
-## Select Language 
+### Select Language 
 ![Language options](images/language-options.png)
 
 Click on the dropdown box to display the languages available for selection and select the desired language to be used for synthesis. 
 
-## Select Voice
+### Select Voice
 
 Similarly, click on the dropdown box to display the voices available for selection and select the desired voice to be used for synthesis. 
 
 > [!NOTE]
 > Some voices available in the Text mode are not supported in the SSML mode (e.g. Chirp HD voices)
 
-## Synthesize
+### Synthesize
 
 Lastly, click on the **Synthesize** button to generate the output audio file. A success message will be displayed when the audio file has been successfully synthesised. 
 
