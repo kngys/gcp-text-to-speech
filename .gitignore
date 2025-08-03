@@ -11,3 +11,4 @@ config.json
 *.spec
 build/
 dist/
+*.txt
