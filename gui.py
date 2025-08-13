@@ -94,8 +94,8 @@ class TextToSpeechApp:
         ttk.Label(dropdown_frame, text="Select Engine:").pack(side="left", padx=5)
         self.engine_combo = ttk.Combobox(dropdown_frame, width=45, textvariable=self.engine, state="readonly")
         self.engine_combo.pack(side="left", padx=5)
+        self.engine_combo.configure(state="disabled")
 
-                
         # Synthesize 
         ttk.Button(self.root, text="Synthesize", width=20, command=self.run_synthesis).pack(pady=10)
 
@@ -122,9 +122,11 @@ class TextToSpeechApp:
         if selected_provider == "Google Cloud":
             self.key_entry.configure(state="normal")
             self.key_browse_button.configure(state="normal")
+            self.engine_combo.configure(state="disabled")
             if self.key_path:
                 self.initialize_provider_from_key(self.key_path)
         else:
+            self.engine_combo.configure(state="normal")
             self.key_entry.configure(state="disabled")
             self.key_browse_button.configure(state="disabled")
             self.tts_manager.set_active_provider(selected_provider)
