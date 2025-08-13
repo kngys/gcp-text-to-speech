@@ -7,7 +7,7 @@ class GoogleTTSProvider(TTSProvider):
         self.key_path = key_path
         self.client = texttospeech.TextToSpeechClient.from_service_account_file(key_path)
 
-    def synthesize_text(self, input_path, lang, voice, output_path):
+    def synthesize_text(self, input_path, lang, voice, output_path, engine=None):
         with open(input_path) as f:
             text = f.read()
 
@@ -19,7 +19,7 @@ class GoogleTTSProvider(TTSProvider):
         with open(output_path, "wb") as out:
             out.write(response.audio_content)
 
-    def synthesize_ssml(self, input_path, lang, voice, output_path):
+    def synthesize_ssml(self, input_path, lang, voice, output_path, engine=None):
         with open(input_path) as f:
             ssml = f.read()
 
@@ -42,3 +42,7 @@ class GoogleTTSProvider(TTSProvider):
             "gender": v.ssml_gender.name,
             "ssml_support": not "Chirp" in v.name
         } for v in voices]
+    
+    def list_engines(self, lang, voice):
+        return []
+

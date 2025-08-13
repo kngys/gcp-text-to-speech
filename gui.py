@@ -16,6 +16,7 @@ class TextToSpeechApp:
         self.synth_mode = tk.StringVar(value="text")
         self.language = tk.StringVar()
         self.voice = tk.StringVar()
+        self.engine = tk.StringVar()
         self.provider = tk.StringVar()
         self.config = load_config()
 
@@ -67,7 +68,7 @@ class TextToSpeechApp:
         self.output_entry.pack(pady=5)
         ttk.Button(self.root, text="Browse", command=self.browse_output_file).pack(pady=5) 
 
-        # Select Language and Voice
+        # Select Language, Voice and Engine
         dropdown_frame = tk.Frame(self.root)
         dropdown_frame.pack(pady=10)
 
@@ -79,6 +80,7 @@ class TextToSpeechApp:
         self.voice_combo.pack(side="left", padx=5)
         self.language_combo.bind("<Button-1>", lambda event: self.load_languages())
         self.language_combo.bind("<<ComboboxSelected>>", self.update_voice_list)
+        self.voice_combo.bind("<<ComboboxSelected>>", self.update_engine_list)
 
         last_lang = self.config.get("gcp_language", "")
         last_voice = self.config.get("gcp_voice", "")
@@ -88,6 +90,10 @@ class TextToSpeechApp:
         self.voice_combo.set(last_voice)
         if last_lang:
             self.update_voice_list()
+
+        ttk.Label(dropdown_frame, text="Select Engine:").pack(side="left", padx=5)
+        self.engine_combo = ttk.Combobox(dropdown_frame, width=45, textvariable=self.engine, state="readonly")
+        self.engine_combo.pack(side="left", padx=5)
 
                 
         # Synthesize 
@@ -191,6 +197,17 @@ class TextToSpeechApp:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load voices:\n{e}")
 
+    def update_engine_list(self, event=None):
+
+        selected_lang = self.language.get()
+        selected_voice = self.voice.get()
+
+        try:
+            engine_list = self.tts_manager.get_engines(selected_lang, selected_voice)
+            self.engine_combo['values'] = engine_list
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load engines:\n{e}")
+
     def run_synthesis(self):
         key_path = self.key_entry.get()
         input_path = self.input_entry.get()
@@ -198,6 +215,7 @@ class TextToSpeechApp:
         mode = self.synth_mode.get()
         lang = self.language.get()
         voice_name = self.voice.get().split(' ')[0]
+        engine = self.engine.get().lower()
 
         if not key_path:
             messagebox.showwarning("No key selected.", "Please select a key for authentication.")
@@ -214,7 +232,7 @@ class TextToSpeechApp:
         try:
             provider = self.tts_manager.active_provider
             
-            self.tts_manager.synthesize(mode, input_path, lang, voice_name, output_path)
+            self.tts_manager.synthesize(mode, input_path, lang, voice_name, output_path, engine)
             self.config["gcp_key_path"] = self.key_path
             self.config["gcp_language"] = lang
             self.config["gcp_voice"] = voice_name

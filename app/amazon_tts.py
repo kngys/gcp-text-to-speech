@@ -6,19 +6,19 @@ class AmazonTTSProvider(TTSProvider):
     def __init__(self):
         self.client = boto3.client("polly", region_name="ap-southeast-1")
     
-    def synthesize_text(self, input_path, lang, voice, output_path):
+    def synthesize_text(self, input_path, lang, voice, output_path, engine):
         with open(input_path) as f:
             text = f.read()
 
-        response = self.client.synthesize_speech(LanguageCode=lang, OutputFormat="mp3", VoiceId=voice, Text=text)
+        response = self.client.synthesize_speech(LanguageCode=lang, OutputFormat="mp3", VoiceId=voice, Text=text, Engine=engine)
         with open(output_path, "wb") as out:
             out.write(response["AudioStream"].read())
 
-    def synthesize_ssml(self, input_path, lang, voice, output_path):
+    def synthesize_ssml(self, input_path, lang, voice, output_path, engine):
         with open(input_path) as f:
             ssml = f.read()
 
-        response = self.client.synthesize_speech(LanguageCode=lang, OutputFormat="mp3", VoiceId=voice, Text=ssml, TextType="ssml")
+        response = self.client.synthesize_speech(LanguageCode=lang, OutputFormat="mp3", VoiceId=voice, Text=ssml, TextType="ssml", Engine=engine)
         with open(output_path, "wb") as out:
             out.write(response["AudioStream"].read())
 
@@ -33,6 +33,13 @@ class AmazonTTSProvider(TTSProvider):
             "gender": v["Gender"],
             "ssml_support": True
         } for v in voices]
+    
+    def list_engines(self, lang, voice):
+        voices = self.client.describe_voices(LanguageCode=lang)["Voices"]
+        for v in voices:
+            if voice.split(' ')[0] == v["Id"]:
+                return list(map(str.capitalize, v["SupportedEngines"]))
+
     
 
 
