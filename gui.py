@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox, ttk
 from ttkthemes import ThemedTk
 from app.tts_manager import TTSManager
 from app.google_tts import GoogleTTSProvider
+from app.amazon_tts import AmazonTTSProvider
 from config import load_config, save_config
 import os
 
@@ -15,7 +16,7 @@ class TextToSpeechApp:
         self.synth_mode = tk.StringVar(value="text")
         self.language = tk.StringVar()
         self.voice = tk.StringVar()
-        self.provider = tk.StringVar(value="Google")
+        self.provider = tk.StringVar()
         self.config = load_config()
 
         self.tts_manager = TTSManager()
@@ -24,19 +25,28 @@ class TextToSpeechApp:
         # Select provider 
         ttk.Label(self.root, text="Select TTS Provider:").pack(pady=5)
         self.provider_combo = ttk.Combobox(self.root, textvariable=self.provider, state="readonly")
-        self.provider_combo['values'] = ["Google"]
+        self.provider_combo['values'] = ["Google Cloud", "Amazon Polly"]
         self.provider_combo.pack(pady=5)
         self.provider_combo.bind("<<ComboboxSelected>>", self.set_provider)
+
+        self.tts_manager.register_provider("Amazon Polly", AmazonTTSProvider())
         
         # Load or select authentication key file 
-        ttk.Label(self.root, text="Select Key File:").pack(pady=5)
-        self.key_entry = ttk.Entry(self.root, width=50)
+        self.key_frame = tk.Frame(self.root)
+        self.key_frame.pack(pady=5)
+        ttk.Label(self.key_frame, text="Select Key File:").pack(pady=5)
+        self.key_entry = ttk.Entry(self.key_frame, width=50)
         self.key_entry.pack(pady=5)
-        ttk.Button(self.root, text="Browse", command=self.browse_key_file).pack(pady=5) 
+        self.key_browse_button = ttk.Button(self.key_frame, text="Browse", command=self.browse_key_file)
+        self.key_browse_button.pack(pady=5) 
         self.key_path = self.config.get("gcp_key_path", "")
         self.key_entry.insert(0, self.key_path)
         self.key_entry.icursor(tk.END)
         self.key_entry.xview_moveto(1)
+        
+        self.key_entry.configure(state="disabled")
+        self.key_browse_button.configure(state="disabled")
+      
 
         # Select mode
         mode_frame = tk.Frame(self.root)
@@ -86,20 +96,32 @@ class TextToSpeechApp:
         if self.key_path:
             self.initialize_provider_from_key(self.key_path)
 
+        
+
     def initialize_provider_from_key(self, key_path):
         if not os.path.exists(key_path):
             messagebox.showwarning("Invalid Key", "The key file path in config.json is invalid.")
             return
 
-        self.tts_manager.register_provider("Google", GoogleTTSProvider(key_path))
-        self.tts_manager.set_active_provider("Google")
+        self.tts_manager.register_provider("Google Cloud", GoogleTTSProvider(key_path))
+        self.tts_manager.set_active_provider("Google Cloud")
         self.load_languages()
         self.update_voice_list()
 
 
     def set_provider(self, event=None):
-        selected = self.provider.get()
-        self.tts_manager.set_active_provider(selected)
+
+        selected_provider = self.provider.get()
+
+        if selected_provider == "Google Cloud":
+            self.key_entry.configure(state="normal")
+            self.key_browse_button.configure(state="normal")
+            if self.key_path:
+                self.initialize_provider_from_key(self.key_path)
+        else:
+            self.key_entry.configure(state="disabled")
+            self.key_browse_button.configure(state="disabled")
+            self.tts_manager.set_active_provider(selected_provider)
 
         self.load_languages()
         self.language.set("")
@@ -109,6 +131,7 @@ class TextToSpeechApp:
     
     def browse_key_file(self):
         self.key_path = filedialog.askopenfilename(filetypes=[("JSON Files", "*.json")])
+        
         if self.key_path:
             self.key_entry.delete(0, tk.END)
             self.key_entry.insert(0, self.key_path)
@@ -116,8 +139,8 @@ class TextToSpeechApp:
             self.key_entry.xview_moveto(1)
             self.config["gcp_key_path"] = self.key_path
             save_config(self.config)
-            self.tts_manager.register_provider("Google", GoogleTTSProvider(self.key_path))
-            self.tts_manager.set_active_provider("Google")
+            self.tts_manager.register_provider("Google Cloud", GoogleTTSProvider(self.key_path))
+            self.tts_manager.set_active_provider("Google Cloud")
             self.load_languages()
     
     def load_languages(self):
