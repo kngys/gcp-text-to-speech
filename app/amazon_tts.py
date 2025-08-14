@@ -3,6 +3,8 @@ import os
 from .tts_provider import TTSProvider
 
 class AmazonTTSProvider(TTSProvider):
+    NAME = "Amazon Polly"
+
     def __init__(self):
         self.client = boto3.client("polly", region_name="ap-southeast-1")
     
@@ -38,7 +40,7 @@ class AmazonTTSProvider(TTSProvider):
         voices = self.client.describe_voices(LanguageCode=lang)["Voices"]
         for v in voices:
             if voice.split(' ')[0] == v["Id"]:
-                return list(map(str.capitalize, v["SupportedEngines"]))
+                return v["SupportedEngines"]
 
     
 

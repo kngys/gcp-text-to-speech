@@ -3,6 +3,8 @@ import os
 from .tts_provider import TTSProvider
 
 class GoogleTTSProvider(TTSProvider):
+    NAME = "Google Cloud"
+
     def __init__(self, key_path):
         self.key_path = key_path
         self.client = texttospeech.TextToSpeechClient.from_service_account_file(key_path)
