@@ -1,6 +1,7 @@
 # Text-to-speech Synthesizer 
 
-## Setting Up Connection to Google Cloud TTS Service
+## Setting up Connection to TTS Services
+### Google Cloud 
 
 1. Sign in to [Google Cloud Console](https://console.cloud.google.com/).
 2. On the [project selector page](https://console.cloud.google.com/projectselector2/home/dashboard), create a new project or select an existing project. 
@@ -15,6 +16,32 @@
 9. Click on the **keys** tab.
 10. Click on **Add key** button and then select **Create new key**.
 11. Select JSON as the key type and click **Create**. This downloads a service account key file which can be used to authenticate the service account. 
+
+### Amazon Polly 
+
+1. Sign in to [AWS Management Console](https://console.aws.amazon.com/) using your root account. 
+2. In the search bar located at top-left of page, search for the IAM service and click on it. 
+3. Under Access Management on the left, click on **Users**.
+4. Click on the **Create user** button on the right hand side. Fill in the user name and click **Next**. 
+5. For permissions options, select **Attach policies directly** and attach the **AmazonPollyFullAccess** policy. 
+6. Click on **Security Credentials** and then **Create access key**. 
+![Create access key](images/create-access-key.png)
+7. Select **Local code** as use case and click **Next**. Then click **Create access key** button. 
+8. Go to your file explorer an navigate to your username directory (e.g. `C:\Users\USERNAME` on Windows). Check if a folder named `.aws` exists. If not, create a folder with the above name. 
+9. Enter the `.aws` folder and create a file named `credentials`. 
+> [!NOTE]
+> Ensure that the file is named exactly as `credentials` and does not have any extensions (e.g. `credentials.txt`)
+10. In the credentials file, copy and paste the three lines below.
+
+>[default] <br />
+>aws_access_key_id = YOUR_ACCESS_KEY <br />
+>aws_secret_access_key = YOUR_SECRET_KEY
+
+11. Return to the access key page. 
+![Access key](images/access-keys.png)
+
+12. Copy and paste your actual access key and secret access key into the credentials file. Save the file.
+![Completed credentials](images/completed_credentials.png)
 
 ## Features
 
