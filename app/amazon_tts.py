@@ -1,4 +1,4 @@
-import boto3
+from boto3.session import Session
 import os
 from .tts_provider import TTSProvider
 
@@ -6,7 +6,8 @@ class AmazonTTSProvider(TTSProvider):
     NAME = "Amazon Polly"
 
     def __init__(self):
-        self.client = boto3.client("polly", region_name="ap-southeast-1")
+        session = Session(profile_name="default")
+        self.client = session.client("polly", region_name="ap-southeast-1")
     
     def synthesize_text(self, input_path, lang, voice, output_path, engine):
         with open(input_path) as f:

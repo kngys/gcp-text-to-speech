@@ -154,7 +154,7 @@ class TextToSpeechApp:
             if self.key_path:
                 self.initialize_provider_from_key(self.key_path)
         else:
-            self.engine_combo.configure(state="normal")
+            self.engine_combo.configure(state="readonly")
             self.key_entry.configure(state="disabled")
             self.key_browse_button.configure(state="disabled")
             self.tts_manager.set_active_provider(selected_provider)
@@ -253,6 +253,7 @@ class TextToSpeechApp:
                 messagebox.showerror("Error", f"Failed to load engines:\n{e}")
 
     def run_synthesis(self):
+        provider_name = self.provider.get()
         key_path = self.key_entry.get()
         input_path = self.input_entry.get()
         output_path = self.output_entry.get()
@@ -261,7 +262,11 @@ class TextToSpeechApp:
         voice_name = self.voice.get().split(' ')[0]
         engine = self.engine.get().lower()
 
-        if self.provider.get() == GoogleTTSProvider.NAME and not key_path:
+        if not provider_name:
+            messagebox.showwarning("No provider selected.", "Please select a provider.")
+            return
+
+        if provider_name == GoogleTTSProvider.NAME and not key_path:
             messagebox.showwarning("No key selected.", "Please select a key for authentication.")
             return
 
@@ -271,6 +276,18 @@ class TextToSpeechApp:
         
         if not output_path:  
             messagebox.showwarning("Location or name of output file not specified.", "Please specify location and name of output file.")
+            return
+        
+        if not lang:
+            messagebox.showwarning("Language not specified.", "Please specify language for synthesis.")
+            return
+        
+        if not voice_name:
+            messagebox.showwarning("Voice not specified.", "Please specify voice for synthesis.")
+            return
+        
+        if provider_name == AmazonTTSProvider.NAME and not engine:
+            messagebox.showwarning("Engine not specified.", "Please specify engine for synthesis.")
             return
 
         try:
