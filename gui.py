@@ -11,7 +11,7 @@ class TextToSpeechApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Text-to-Speech Synthesizer")
-        self.root.geometry("800x600")
+        self.root.geometry("900x620+60+30")
 
         self.synth_mode = tk.StringVar(value="text")
         self.language = tk.StringVar()
@@ -19,7 +19,6 @@ class TextToSpeechApp:
         self.engine = tk.StringVar()
         self.provider = tk.StringVar()
         self.config = load_config()
-
         self.tts_manager = TTSManager()
         self.key_path = self.config.get("gcp_key_path", "")
 
@@ -29,7 +28,6 @@ class TextToSpeechApp:
         self.provider_combo['values'] = [GoogleTTSProvider.NAME, AmazonTTSProvider.NAME]
         self.provider_combo.pack(pady=5)
         self.provider_combo.bind("<<ComboboxSelected>>", self.set_provider)
-
         self.tts_manager.register_provider(AmazonTTSProvider.NAME, AmazonTTSProvider())
         
         # Load or select authentication key file 
@@ -40,7 +38,6 @@ class TextToSpeechApp:
         self.key_entry.pack(pady=5)
         self.key_browse_button = ttk.Button(self.key_frame, text="Browse", command=self.browse_key_file)
         self.key_browse_button.pack(pady=5) 
-        self.key_path = self.config.get("gcp_key_path", "")
         self.key_entry.insert(0, self.key_path)
         self.key_entry.icursor(tk.END)
         self.key_entry.xview_moveto(1)
@@ -48,7 +45,6 @@ class TextToSpeechApp:
         self.key_entry.configure(state="disabled")
         self.key_browse_button.configure(state="disabled")
       
-
         # Select mode
         mode_frame = tk.Frame(self.root)
         mode_frame.pack()
@@ -73,23 +69,21 @@ class TextToSpeechApp:
         dropdown_frame.pack(pady=10)
 
         ttk.Label(dropdown_frame, text="Select Language:").pack(side="left", padx=5)
-        self.language_combo = ttk.Combobox(dropdown_frame, textvariable=self.language, state="readonly")
+        self.language_combo = ttk.Combobox(dropdown_frame, width=10, textvariable=self.language, state="readonly")
         self.language_combo.pack(side="left", padx=5)
         ttk.Label(dropdown_frame, text="Select Voice:").pack(side="left", padx=5)
-        self.voice_combo = ttk.Combobox(dropdown_frame, width=45, textvariable=self.voice, state="readonly")
+        self.voice_combo = ttk.Combobox(dropdown_frame, height=10, width=40, textvariable=self.voice, state="readonly")
         self.voice_combo.pack(side="left", padx=5)
         self.language_combo.bind("<Button-1>", lambda event: self.load_languages())
         self.language_combo.bind("<<ComboboxSelected>>", self.update_voice_list)
         self.voice_combo.bind("<<ComboboxSelected>>", self.update_engine_list)
-
-
         ttk.Label(dropdown_frame, text="Select Engine:").pack(side="left", padx=5)
-        self.engine_combo = ttk.Combobox(dropdown_frame, width=45, textvariable=self.engine, state="readonly")
+        self.engine_combo = ttk.Combobox(dropdown_frame, width=20, textvariable=self.engine, state="readonly")
         self.engine_combo.pack(side="left", padx=5)
         self.engine_combo.configure(state="disabled")
 
         # Synthesize 
-        ttk.Button(self.root, text="Synthesize", width=20, command=self.run_synthesis).pack(pady=10)
+        ttk.Button(self.root, text="Synthesize", width=20, command=self.run_synthesis).pack(pady=20)
 
         self.load_provider_config()
 
@@ -188,8 +182,7 @@ class TextToSpeechApp:
         try:
             self.lang_set = self.tts_manager.get_languages()
             self.language_combo['values'] = list(self.lang_set)
-            self.voice_combo['values'] = []
-            # self.update_voice_list()  
+            self.update_voice_list()  
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load languages:\n{e}")
 
@@ -218,7 +211,6 @@ class TextToSpeechApp:
 
     def update_voice_list(self, event=None):
         selected_lang = self.language.get()
-
         if not selected_lang:
             return
         
@@ -228,14 +220,12 @@ class TextToSpeechApp:
             if self.synth_mode.get() == "ssml":
                 voice_list = [v for v in voice_list if v['ssml_support']]
                 formatted_voices = [f"{v['name']} ({v['gender']})" for v in voice_list]
-                # voice_names = [v['name'] for v in voice_list]
                 if selected_voice not in formatted_voices:
                     self.voice.set("")
                     self.voice_combo.set("")
                     messagebox.showinfo("Voice Not Supported", "The selected voice does not support SSML.") 
             else:
                 formatted_voices = [f"{v['name']} ({v['gender']})" for v in voice_list]
-                # voice_names = [v['name'] for v in voice_list]
                 if selected_voice not in formatted_voices:
                     self.voice.set("")
                     self.voice_combo.set("")
@@ -285,22 +275,6 @@ class TextToSpeechApp:
 
         try:
             provider = self.tts_manager.active_provider
-
-            '''
-            self.config["provider"] = provider
-            
-           
-
-            if provider == "Google Cloud":
-                self.config["gcp_key_path"] = key_path
-                self.config["gcp_language"] = lang
-                self.config["gcp_voice"] = voice_name
-            else:
-                self.config["aws_language"] = lang
-                self.config["aws_voice"] = voice_name 
-                self.config["aws_engine"] = engine
-            '''
-
             self.save_provider_config()
             save_config(self.config)
             self.tts_manager.synthesize(mode, input_path, lang, voice_name, output_path, engine)
