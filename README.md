@@ -25,7 +25,7 @@
 4. Click on the **Create user** button on the right hand side. Fill in the user name and click **Next**. 
 5. For permissions options, select **Attach policies directly** and attach the **AmazonPollyFullAccess** policy. 
 6. Click on **Security Credentials** and then **Create access key**. 
-![Create access key](images/create-access-key.png)
+![Create access key](images/aws/create-access-key.png)
 7. Select **Local code** as use case and click **Next**. Then click **Create access key** button. 
 8. Go to your file explorer an navigate to your username directory (e.g. `C:\Users\USERNAME` on Windows). Check if a folder named `.aws` exists. If not, create a folder with the above name. 
 9. Enter the `.aws` folder and create a file named `credentials`. 
@@ -38,17 +38,23 @@
 >aws_secret_access_key = YOUR_SECRET_KEY
 
 11. Return to the access key page. 
-![Access key](images/access-keys.png)
+![Access key](images/aws/access-keys.png)
 
 12. Copy and paste your actual access key and secret access key into the credentials file. Save the file.
-![Completed credentials](images/completed_credentials.png)
+![Completed credentials](images/aws/completed_credentials.png)
 
 ## Features
 
-![App screenshot](images/app-screenshot-v2.png)
+![User interface](images/gui/gui-v3.png)
+
+### Select TTS Provider 
+Click on the dropdown box to display TTS providers available for selection and select the desired TTS provider to be used for synthesis. 
 
 ### Select Key File
-Click the **Browse** button select a valid key file as obtained from [setting up the TTS service](#setting-up-connection-to-google-cloud-tts-service). 
+Click the **Browse** button select a valid key file as obtained from [setting up the TTS service](#google-cloud). 
+
+> [!NOTE]
+> This is only required if the TTS provider selected is Google Cloud.
 
 ### Select Mode
 Click the **Text** or **SSML** button to select the desired mode. 
@@ -65,7 +71,7 @@ Depending on the mode previously selected, click on the **Browse** button to sel
 Click the **Browse** button to select a location to save the generated output audio file. 
 
 ### Select Language 
-![Language options](images/language-options.png)
+![Language options](images/gui/language-options.png)
 
 Click on the dropdown box to display the languages available for selection and select the desired language to be used for synthesis. 
 
@@ -76,8 +82,14 @@ Similarly, click on the dropdown box to display the voices available for selecti
 > [!NOTE]
 > Some voices available in the Text mode are not supported in the SSML mode (e.g. Chirp HD voices)
 
+### Select Voice Engine
+Similarly, click on the dropdown box to display the voice engines available for selection and select the desired voice engine to be used for synthesis. 
+
+> [!NOTE]
+> This is only supported if the TTS provider selected is Amazon Polly.
+
 ### Synthesize
 
 Lastly, click on the **Synthesize** button to generate the output audio file. A success message will be displayed when the audio file has been successfully synthesised. 
 
-![success message](images/success-message.png)
+![success message](images/gui/success-message.png)
